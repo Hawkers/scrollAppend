@@ -3,7 +3,7 @@
  * scrollAppend (jQuery auto append results)
  * 2012 by Hawkee.com (hawkee@gmail.com)
  *
- * Version 1.0
+ * Version 1.2
  * 
  * Requires jQuery 1.7 and jQuery UI 1.8
  *
@@ -34,6 +34,7 @@
  *
  *  moreText: The text that will be indicate a pause.
  *
+ *  disableCache: Always start from the first page, don't cache appends.
  *
  * Usage:
  *
@@ -53,7 +54,8 @@
 		expireCacheMins: 20,
 		pagesToPause: 3,
 		loadingImage: '/images/loading.gif',
-		moreText: 'Show More'
+		moreText: 'Show More',
+		disableCache: false 
 	},
 
 	_create:function() {
@@ -73,31 +75,46 @@
 
 		self.param_key = param_key;
 
-		//localStorage.clear();
+		// Clears expired localStorage data.
+
 		this.clearOld();
 
-		//console.log("checking for localstorage");
-		var cache = localStorage.getItem('scroll_'+self.param_key);
-		if(cache != undefined) {
-			var timestamp = localStorage.getItem('time_'+self.param_key);
-			self.page = localStorage.getItem('p_'+self.param_key);
-			//console.log("resuming from page: "+self.page+" at "+timestamp);
-			$(this.options.appendTo).append(cache);
-			if(self.options.callback) self.options.callback.apply();
+		// Look for cached appends.
+
+		if(!self.options.disableCache) {
+			var cache = localStorage.getItem('scroll_'+self.param_key);
+			if(cache != undefined) {
+				var timestamp = localStorage.getItem('time_'+self.param_key);
+				self.page = localStorage.getItem('p_'+self.param_key);
+				//console.log("resuming from page: "+self.page+" at "+timestamp);
+				$(this.options.appendTo).append(cache);
+				if(self.options.callback) self.options.callback.apply();
+			}
 		}
+
+		// See if we're already at the end of the results on the first page.
+
+		self.checkAppend();
 
 		// Determines if we scrolled to the bottom of the page and appends if we still have results and we aren't paused.
 
 		$(window).scroll(function () { 
-			if($(window).scrollTop() >= $(document).height() - $(window).height() - self.options.pixelBuffer) {
-				if(!self.loading) {
-					if(self.stop) return;
-					if(!self.pause) self.append();
-				}
-			}
+			self.checkAppend();
 		});
 
 		$(document).on('click', '#scroll_append_more', function() { self.append(); $(this).remove(); self.pause = false; return false; });
+	},
+
+	// Checks if we need to append and calls append if need be.
+
+	checkAppend: function () {
+		var self = this;
+		if($(window).scrollTop() >= $(document).height() - $(window).height() - self.options.pixelBuffer) {
+			if(!self.loading) {
+				if(self.stop) return;
+				if(!self.pause) self.append();
+			}
+		}
 	},
 
 	// Appends the next page
@@ -127,12 +144,14 @@
 
 					// Update the cache for returning to the page.
 
-					var old = localStorage.getItem('scroll_'+self.param_key);
-					if(old === null) old = "";
-					self.saveData('scroll_'+self.param_key, old + html);
-					self.saveData('p_'+self.param_key, self.page);
-					var timestamp = Number(new Date());
-					self.saveData('time_'+self.param_key, timestamp);
+					if(!self.options.disableCache) {
+						var old = localStorage.getItem('scroll_'+self.param_key);
+						if(old === null) old = "";
+						self.saveData('scroll_'+self.param_key, old + html);
+						self.saveData('p_'+self.param_key, self.page);
+						var timestamp = Number(new Date());
+						self.saveData('time_'+self.param_key, timestamp);
+					}
 				}
 
 				// Check if we need to pause.
