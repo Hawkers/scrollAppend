@@ -48,7 +48,7 @@
  *		url: 'newsfeed.php',
  *		params: { type: "image", who: "friends" },
  *		appendTo: "#newsfeed",
- *      footerClass: "#footer"
+ *		footerClass: "#footer"
  *	});
 */
 
@@ -151,13 +151,6 @@
 		if(self.options.footerClass == undefined) return;
 		var contentHeight = $(self.options.footerClass).outerHeight();
 
-		// If the class got removed because the user scrolled up, add it back.
-		/*
-		if(!$(self.options.footerClass).hasClass('footer_fixed')) {
-			self.setFixed();
-		}
-		*/
-
 		if(!self.footerUp) {
 			// Start the footer below the bottom and slide it up into view.
 			$(self.options.footerClass).stop(true, true).animate(
@@ -208,9 +201,6 @@
 		if(self.position == 'fixed') return;
 		var contentHeight = $(self.options.footerClass).outerHeight();
 				
-				//$(self.options.footerClass).stop(true, true);
-				//$(self.options.contentClass).stop(true, true);
-
 		$(self.options.footerClass).css('bottom', -contentHeight);
 
 		$(self.options.footerClass).addClass('footer_fixed')
@@ -226,10 +216,6 @@
 	setRelative: function() {
 		var self = this;
 		if(self.position == 'relative') return;
-
-				//console.log("stopping true");
-				//$(self.options.footerClass).stop(true, true);
-				//$(self.options.contentClass).stop(true, true);
 
 		$(self.options.footerClass).removeClass('footer_fixed');
 		$(self.options.footerClass).css('bottom', 0);
