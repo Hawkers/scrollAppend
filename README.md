@@ -20,7 +20,7 @@ $(window).scrollAppend({
 });
 ```
 
-You can style the loading and show more divs with the following tags:
+Here are CSS classes it uses (.footer_fixed is required for the fixed footer feature):
  
 ```
 .scroll_append_more { width: 100%; text-align: center; }
