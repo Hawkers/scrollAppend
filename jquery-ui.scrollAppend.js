@@ -46,8 +46,9 @@
  *
  * $(window).scrollAppend({
  *		url: 'newsfeed.php',
- *		params: { type: "image", who: "friends" }
- *		appendTo: "#newsfeed"
+ *		params: { type: "image", who: "friends" },
+ *		appendTo: "#newsfeed",
+ *      footerClass: "#footer"
  *	});
 */
 
