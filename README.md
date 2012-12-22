@@ -30,3 +30,6 @@ Here are CSS classes it uses (.footer_fixed is required for the fixed footer fea
 ```
 
 When you've reached the last page of results simply have your server-side script return the word "false" in plain text.
+
+Discuss at Hawkee:
+http://www.hawkee.com/snippet/9445/
