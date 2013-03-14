@@ -2,8 +2,9 @@
 /*
  * scrollAppend (jQuery auto append results)
  * 2012 by Hawkee.com (hawkee@gmail.com)
+ * 2013 Edited by Nikolas (info@devian.gr)
  *
- * Version 1.5
+ * Version 1.5.001-Alpha
  * 
  * Requires jQuery 1.7 and jQuery UI 1.8
  *
@@ -21,6 +22,8 @@
  *  appendTo: The div that will get the next page of results.
  *
  *  callback: Anything that needs to be called once the next page has been appended.
+ * 
+ *  container: Specify the Container of the Content that is scrolling. If nothing specified the container will be: document
  *
  *  pixelBuffer: Pixes from the bottom of the window before starting to load next page.
  *
@@ -48,13 +51,13 @@
  *		url: 'newsfeed.php',
  *		params: { type: "image", who: "friends" },
  *		appendTo: "#newsfeed",
- *		footerClass: "#footer"
+ *      	footerClass: "#footer",
+ * 		container: "document"
  *	});
 */
 
 
 (function($){$.widget("ui.scrollAppend", {
-
 	options:{
 		pixelBuffer: 400,
 		pageVar: 'p',
@@ -62,7 +65,8 @@
 		pagesToPause: 5,
 		loadingImage: '/images/loading.gif',
 		moreText: 'Show More',
-		disableCache: false,
+		disableCache: true,
+		container: undefined,
 		footerClass: undefined,
 		contentClass: undefined,
 		footerSpeed: 400,
@@ -80,7 +84,10 @@
 		self.lastScrollPos = undefined;
 		self.position = undefined;
 		self.appearedOnce = false;
-
+		
+		if (self.options.container == undefined) {
+			self.options.container = document;
+		}
 
 		self.options.contentClass = undefined;
 
@@ -116,12 +123,12 @@
 		self.checkAppend();
 
 		// Determines if we scrolled to the bottom of the page and appends if we still have results.
-		$(window).scroll(function () {
+		$($(self.options.container)).scroll(function () {
 			self.checkAppend();
 			if(self.options.footerClass != undefined && !self.loading) self.checkDirection();
 		});
 
-		$(document).on('click', '#scroll_append_more', function() {
+		$($(self.options.container)).on('click', '#scroll_append_more', function() {
 			self.append();
 			$(this).remove();
 			self.pause = false;
@@ -133,13 +140,20 @@
 	// Checks if we need to slide the footer into view.
 	checkAppend: function () {
 		var self = this;
-		var height = $(document).height() - $(window).height();
-
+		var element = $(self.options.container);
+		var height = Math.abs($($(self.options.container)).height() - $($(self.element)).height());
+		var scrollTop=$($(self.element)).scrollTop();
+		if (scrollTop == 0) {
+			var scrollTop=$($(self.options.container)).scrollTop();
+		}
 		// Check to see if we're within pixelBuffer of the bottom of the window.
-		if($(window).scrollTop() >= height - self.options.pixelBuffer) {
+		if(scrollTop >= height - self.options.pixelBuffer) {
 			if(!self.loading) {
 				if(self.stop) return;
-				if(!self.pause) self.append();
+				if(!self.pause) { 
+					self.pause=true;
+					self.append(); 
+				}
 			}
 		}
 	},
@@ -203,13 +217,13 @@
 				
 		$(self.options.footerClass).css('bottom', -contentHeight);
 
-		$(self.options.footerClass).addClass('footer_fixed')
+		//$(self.options.footerClass).addClass('footer_fixed')
 		if(self.options.contentClass != undefined) {
 			// Every time the footer is initialized to fixed it'll be under the bottom of the page.
 			$(self.options.contentClass).css('margin-bottom', 0);
 		}
 		self.footerUp = false;
-		self.position = 'fixed';
+		//self.position = 'fixed';
 	},
 
 	// Makes the footer relative and adjusts the margin of the page.
@@ -254,7 +268,7 @@
 
 		var loadingImage;
 		if(self.options.loadingImage) {
-			$(self.options.appendTo).append("<div id='scroll_append_loading' class='scroll_append_loading'><img src='"+self.options.loadingImage+"'></div>");
+			$(self.options.appendTo).append("<div id='scroll_append_loading' class='scroll_append_loading'><i class='icon-spin icon-spinner icon-2x'></i></div>");
 		}
 
 		// Only fix the footer a single time after the first page is loaded.
@@ -271,7 +285,7 @@
 				}	
 				else {
 					$(self.options.appendTo).append(html);
-
+					self.pause=false;
 					// Update the cache for returning to the page.
 
 					if(!self.options.disableCache) {
@@ -288,7 +302,7 @@
 
 				var mod = self.page % self.options.pagesToPause;
 				if(mod == 0 && !self.stop) {
-					$(self.options.appendTo).append("<div id='scroll_append_more' class='scroll_append_more'>"+self.options.moreText+"</div>");
+					$(self.options.appendTo).append("<div id='scroll_append_more' class='scroll_append_more'><a class='btn btn-primary'>"+self.options.moreText+"</a></div>");
 					self.pause = true;
 				}
 
