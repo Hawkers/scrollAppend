@@ -298,6 +298,8 @@
 				if(self.options.callback) self.options.callback.apply();
 
 				self.loading = false;
+
+				self.checkAppend();
 			}
 		});
 	},
